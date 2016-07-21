@@ -1,1 +1,7 @@
 *.py~
+test.pdf
+students.csv
+schedule.dat
+coversheets.pdf
+list.pdf
+__pycache__
