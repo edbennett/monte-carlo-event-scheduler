@@ -63,7 +63,7 @@ class PdfImage(Flowable):
         canv.restoreState()
 
 s = 0.7
-swansea_logo = PdfImage(pagexobj(PdfReader("swanseaA.pdf").pages[0]), 130 * s, 81 * s)
+swansea_logo = PdfImage(pagexobj(PdfReader("swansea.pdf").pages[0]), 130 * s, 81 * s)
 
 def get_header(semester, styles, level=2, cymraeg=False):
     if cymraeg:
