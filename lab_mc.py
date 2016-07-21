@@ -4,7 +4,7 @@ from collections import namedtuple
 from math import ceil
 from collections import Counter
 from itertools import zip_longest 
-from random import randint, choice, random
+from random import randint, choice, random, shuffle
 from math import exp
 from sys import exit
 from lab_defs import Experiment, teaching_length
@@ -252,15 +252,15 @@ def target_labview(pairs, beta):
 def shuffle_polarimeter(pairs):
     experiments_by_week = list(zip_longest(*pairs, fillvalue=null_experiment))
     
-    for week in experiments_by_week:
+    for week_index, week in enumerate(experiments_by_week):
         counter = Counter(week)
-        num_to_replace = experiments["POL*"].count - experiments["POL*"].count
+        num_to_replace = experiments["POL*"].count - counter[experiments["POL*"]]
         if num_to_replace > 0 and counter[experiments["POL"]] > 0:
-            indices = [i for i, j in enumerate(week)
+            pair_indices = [i for i, j in enumerate(week)
                        if j == experiments["POL"]]
-            indices.shuffle()
+            shuffle(pair_indices)
             for _ in range(num_to_replace):
-                week[indices.pop()] = experiments["POL*"]
+                pairs[pair_indices.pop()][week_index] = experiments["POL*"]
 
 
 def targetedupdate(pairs, beta):
@@ -286,7 +286,7 @@ def schedule(start):
     iterations = 0
     beta = 10
     accept = 0
-    update = randomupdate
+    update = targetedupdate
     
     try:
         while True:
@@ -296,10 +296,10 @@ def schedule(start):
                     print('''Slow going, may have insufficient resources, or just an unlucky starting choice.
 Current badness: {:.04}, acceptance {}%.
 Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 10))
-                if accept < 750:
-                    update = targetedupdate
-                else:
-                    update = randomupdate
+#                if accept < 750:
+#                    update = targetedupdate
+#                else:
+#                    update = randomupdate
                 accept = 0
                 beta *= 1.01
                 
