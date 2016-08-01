@@ -26,15 +26,15 @@ experiments = {"DoS": Experiment(202, "Density of States", "Dwysedd Cyflyrau", "
                "HL": Experiment(238, "Hubble's Law", "Deddf Hubble", "HL", writeup=False),
                "BS": Experiment(241, "Balmer Series of the Hydrogen Atom", "Cyfres Balmer yr Atom Hydrogen", "BS"),
                "VIS": Experiment(242, "Viscosity", "Gludedd", "VIS"),
-               "POL": Experiment(244, "Polarimeter", "Polarimedr", "POL", count=3),
-               "POL*": Experiment(244, "Polarimeter", "Polarimedr", "POL*", count=1),
+               "POL": Experiment(244, "Polarimeter", "Polarimedr", "POL", count=4),
+#               "POL*": Experiment(244, "Polarimeter", "Polarimedr", "POL*", count=1),
                "MSD": Experiment(246, "Multiple Slit Diffraction", "Diffreithiant Holltau Lluosog", "MSD"),
                "EB": Experiment(247, "Edser Butler Method", "Dull Edser-Butler", "EB"),
                "BH": Experiment(261, "B/H Curve", "Cromlin B/H", "BH"),
                "SA": Experiment(270, "Spectroscopic Analysis", "Dadansoddiad Spectrosgopig", "SA", writeup=False, undesirable=True),
                "LV": Experiment(299, "LabVIEW", "LabVIEW", "LV", count=12, writeup=False, undesirable=True)}
 experiment_list = list(experiments.values())
-polarimeters = [experiments["POL"], experiments["POL*"]]
+#polarimeters = [experiments["POL"], experiments["POL*"]]
 
 reserve_experiments = {"SE": Experiment(248, "Diffraction at a Straight Edge", "Diffreithiant gan ymyl syth", "SE", 4, True, True),
                        "GYR": Experiment(252, "Gyroscope", "Gyrosgop", "GYR", 4, True, True), 
@@ -90,8 +90,8 @@ def badness(pairs):
             labview_badness += 1
         elif experiments["LV"] in pair and pair.index(experiments["LV"]) < teaching_length:
             labview_badness += 3
-        if experiments["POL"] in pair and experiments["POL*"] in pair:
-            duplicate_badness += 1
+#        if experiments["POL"] in pair and experiments["POL*"] in pair:
+#            duplicate_badness += 1
         
     for week in experiments_by_week:
         counter = Counter(week)
@@ -171,22 +171,22 @@ def target_duplicates(pairs, beta):
             else:
                 pair[index_to_replace] = experiment_to_replace
                 return 0, old_badness
-        if experiments["POL"] in pair and experiments["POL*"] in pair:
-            old_badness = unpleasant_badness(pairs)
-            indices = [i for i, j in enumerate(pair)
-                       if j in polarimeters]
-            index_to_replace = choice(indices)
-            experiment_to_replace = pair[index_to_replace]
-            pair[index_to_replace] = choice(experiment_list)
-            new_badness = unpleasant_badness(pairs)
-
-            if new_badness <= old_badness:
-                return 1, new_badness
-            elif random() < exp(beta * (old_badness - new_badness)):
-                return 1, new_badness
-            else:
-                pair[index_to_replace] = experiment_to_replace
-                return 0, old_badness
+#        if experiments["POL"] in pair and experiments["POL*"] in pair:
+#            old_badness = unpleasant_badness(pairs)
+#            indices = [i for i, j in enumerate(pair)
+#                       if j in polarimeters]
+#            index_to_replace = choice(indices)
+#            experiment_to_replace = pair[index_to_replace]
+#            pair[index_to_replace] = choice(experiment_list)
+#            new_badness = unpleasant_badness(pairs)
+#
+#            if new_badness <= old_badness:
+#                return 1, new_badness
+#            elif random() < exp(beta * (old_badness - new_badness)):
+#                return 1, new_badness
+#            else:
+#                pair[index_to_replace] = experiment_to_replace
+#                return 0, old_badness
 
     raise ValueError("targeting duplicates but look OK")
 
@@ -249,18 +249,18 @@ def target_labview(pairs, beta):
                 return 0, old_badness
     raise ValueError("targeting labview but looks OK")
 
-def shuffle_polarimeter(pairs):
-    experiments_by_week = list(zip_longest(*pairs, fillvalue=null_experiment))
-    
-    for week_index, week in enumerate(experiments_by_week):
-        counter = Counter(week)
-        num_to_replace = experiments["POL*"].count - counter[experiments["POL*"]]
-        if num_to_replace > 0 and counter[experiments["POL"]] > 0:
-            pair_indices = [i for i, j in enumerate(week)
-                       if j == experiments["POL"]]
-            shuffle(pair_indices)
-            for _ in range(num_to_replace):
-                pairs[pair_indices.pop()][week_index] = experiments["POL*"]
+#def shuffle_polarimeter(pairs):
+#    experiments_by_week = list(zip_longest(*pairs, fillvalue=null_experiment))
+#    
+#    for week_index, week in enumerate(experiments_by_week):
+#        counter = Counter(week)
+#        num_to_replace = experiments["POL*"].count - counter[experiments["POL*"]]
+#        if num_to_replace > 0 and counter[experiments["POL"]] > 0:
+#            pair_indices = [i for i, j in enumerate(week)
+#                       if j == experiments["POL"]]
+#            shuffle(pair_indices)
+#            for _ in range(num_to_replace):
+#                pairs[pair_indices.pop()][week_index] = experiments["POL*"]
 
 
 def targetedupdate(pairs, beta):
@@ -326,7 +326,7 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
         if current_badness > 0:
             targetedupdate(pairs, beta)
     
-    shuffle_polarimeter(pairs)
+#    shuffle_polarimeter(pairs)
     return pairs, True
 
 if __name__ == "__main__":
