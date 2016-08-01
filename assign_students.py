@@ -9,7 +9,7 @@ def get_students(filename):
     with open(filename, 'r') as f:
         student_reader = csv.reader(f, delimiter=',', quotechar='"')
         for record in student_reader:
-            students[record[0][:6]] = Student(record[1], record[0][:6], None, None, int(record[7]), int(record[8]) > 0)
+            students[record[0][:6]] = Student(record[1], record[0][:6], None, None, int(record[7]), record[8])
     return students
 
 def match_students(students, pairs):

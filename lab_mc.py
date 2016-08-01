@@ -13,40 +13,38 @@ num_pairs = 68
 num_theory = 5
 pairs_per_cohort = ceil(num_pairs / 4)
 
-tutorials = {"NA": Experiment(201, "Numerical Analysis", "Dadansoddi Rhifiadol", "NA", count=75, writeup=False, fixed=True),
-             "LVT": Experiment(298, "LabVIEW Tutorial", "Tiwtorial LabVIEW", "LVT", count=75, writeup=False, fixed=True)}
+tutorials = {"NA": Experiment(201, "Numerical Analysis", "NA", count=75, writeup=False, fixed=True),
+             "LVT": Experiment(298, "LabVIEW Tutorial", "LVT", count=75, writeup=False, fixed=True)}
 
-experiments = {"DoS": Experiment(202, "Density of States", "Dwysedd Cyflyrau", "DoS", writeup=False, undesirable=True),
-               "ESR": Experiment(221, "Electron Spin Resonance", "Cyseiniant Sbin Electronau", "ESR"),
+experiments = {"DoS": Experiment(202, "Density of States", "DoS", writeup=False, undesirable=True),
+               "ESR": Experiment(221, "Electron Spin Resonance", "ESR"),
                "BG": Experiment(222, 
                                 '<font face="AvenirNext">α</font>, <font face="AvenirNext">β</font>, and <font face="AvenirNext">γ</font>-radiation', 
-                                'Ymbelydredd <font face="AvenirNext">α</font>, <font face="AvenirNext">β</font> a <font face="AvenirNext">γ</font>', "BG"),
-               "FH": Experiment(223, "Franck Hertz", "Franck Hertz", "FH"),
-               "RS": Experiment(224, "Rutherford Scattering", "Gwasgariad Rutherford", "RS"),
-               "HL": Experiment(238, "Hubble's Law", "Deddf Hubble", "HL", writeup=False),
-               "BS": Experiment(241, "Balmer Series of the Hydrogen Atom", "Cyfres Balmer yr Atom Hydrogen", "BS"),
-               "VIS": Experiment(242, "Viscosity", "Gludedd", "VIS"),
-               "POL": Experiment(244, "Polarimeter", "Polarimedr", "POL", count=4),
-#               "POL*": Experiment(244, "Polarimeter", "Polarimedr", "POL*", count=1),
-               "MSD": Experiment(246, "Multiple Slit Diffraction", "Diffreithiant Holltau Lluosog", "MSD"),
-               "EB": Experiment(247, "Edser Butler Method", "Dull Edser-Butler", "EB"),
-               "BH": Experiment(261, "B/H Curve", "Cromlin B/H", "BH"),
-               "SA": Experiment(270, "Spectroscopic Analysis", "Dadansoddiad Spectrosgopig", "SA", writeup=False, undesirable=True),
-               "LV": Experiment(299, "LabVIEW", "LabVIEW", "LV", count=12, writeup=False, undesirable=True)}
+                                "BG"),
+               "FH": Experiment(223, "Franck Hertz", "FH"),
+               "RS": Experiment(224, "Rutherford Scattering", "RS"),
+               "HL": Experiment(238, "Hubble's Law", "HL", writeup=False),
+               "BS": Experiment(241, "Balmer Series of the Hydrogen Atom", "BS"),
+               "VIS": Experiment(242, "Viscosity", "VIS"),
+               "POL": Experiment(244, "Polarimeter", "POL", count=4),
+               "MSD": Experiment(246, "Multiple Slit Diffraction", "MSD"),
+               "EB": Experiment(247, "Edser Butler Method", "EB"),
+               "BH": Experiment(261, "B/H Curve", "BH"),
+               "SA": Experiment(270, "Spectroscopic Analysis", "SA", writeup=False, undesirable=True),
+               "LV": Experiment(299, "LabVIEW", "LV", count=12, writeup=False, undesirable=True)}
 experiment_list = list(experiments.values())
-#polarimeters = [experiments["POL"], experiments["POL*"]]
 
-reserve_experiments = {"SE": Experiment(248, "Diffraction at a Straight Edge", "Diffreithiant gan ymyl syth", "SE", 4, True, True),
-                       "GYR": Experiment(252, "Gyroscope", "Gyrosgop", "GYR", 4, True, True), 
-                       "MSA": Experiment(271, "More Spectroscopic Analysis", "Rhogor o ddadansoddiad spectrosgopig", "MSA", 50, False, True)}
+reserve_experiments = {"SE": Experiment(248, "Diffraction at a Straight Edge", "SE", 4, True, True),
+                       "GYR": Experiment(252, "Gyroscope", "GYR", 4, True, True), 
+                       "MSA": Experiment(271, "More Spectroscopic Analysis", "MSA", 50, False, True)}
 
-GP = ([Experiment("", "Group project week {}".format(i+1), "Prosiect grŵp wythnos {}".format(i+1), "", count=20, fixed=True) for i in range(4)]
-      + [Experiment("", "Group project presentations", "Cyflwyniadau'r prosiectiau grŵp", "", count=40, fixed=True)])
+GP = ([Experiment("", "Group project week {}".format(i+1), "", count=20, fixed=True) for i in range(4)]
+      + [Experiment("", "Group project presentations", "", count=40, fixed=True)])
 
-writeup1 = Experiment("", "Report write-up time", "Amser i ysgrifennu adroddiad", "", count=75, fixed=True)
-writeup2 = Experiment(" ", "Report write-up time", "Amser i ysgrifennu adroddiad", "", count=75, fixed=True)
-null_experiment = Experiment("", "", "", "", count=1000)
-bad_null = Experiment("", "", "", "—", count=0)
+writeup1 = Experiment("", "Report write-up time", "", count=75, fixed=True)
+writeup2 = Experiment(" ", "Report write-up time", "", count=75, fixed=True)
+null_experiment = Experiment("", "", "", count=1000)
+bad_null = Experiment("", "", "—", count=0)
 
 all_experiments = {**experiments, **reserve_experiments, **tutorials}
 

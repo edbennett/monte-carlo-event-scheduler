@@ -27,6 +27,8 @@ import io
 
 from datetime import date
 
+from loc import localise, strings
+
 
 class PdfImage(Flowable):
     '''from http://stackoverflow.com/questions/31712386/loading-matplotlib-object-into-reportlab/'''
@@ -65,13 +67,9 @@ class PdfImage(Flowable):
 s = 0.7
 swansea_logo = PdfImage(pagexobj(PdfReader("swansea.pdf").pages[0]), 130 * s, 81 * s)
 
-def get_header(semester, styles, level=2, cymraeg=False):
-    if cymraeg:
-        title1 = "Adran Ffiseg • Dyddiadur Labordy"
-        title2 = "Lefel {} • {}–{} BD{}"
-    else:
-        title1 = "Department of Physics • Lab Diary"
-        title2 = "Level {} • {}–{} TB{}"
+def get_header(semester, styles, level=2, lang="en"):
+    title1 = localise(lang, "Department of Physics • Lab Diary", strings)
+    title2 = "Level {} • {}–{} TB{}"
 
     contents = [[[swansea_logo],
                 [Paragraph(title1, styles["Title"]),
@@ -115,12 +113,11 @@ def build_document(students, dates, semester, filename, level=2):
     styles = get_styles()
 
     Story = []
-    english_header = get_header(semester, styles, level, False)
-    cymraeg_header = get_header(semester, styles, level, True)
+    header = {"en": get_header(semester, styles, level, "en"),
+              "cy": get_header(semester, styles, level, "cy")}
 
     for student in students:
-        Story.extend(print_student(student, dates, semester, styles, 
-                                   cymraeg_header if student.cymraeg else english_header))
+        Story.extend(print_student(student, dates, semester, styles, header[student.lang]))
         Story.append(PageBreak())
     del Story[-1]
     
@@ -136,7 +133,7 @@ def print_student(student, dates, semester, styles, header):
     barcode.barHeight = 15 * mm
     barcode.hAlign = "CENTER"
 
-    pair = "Pâr" if student.cymraeg else "Pair"
+    pair = localise(student.lang, "Pair", strings)
     Story.append(Paragraph("{} {}, {} {}".format(student.name, student.number, pair, student.pair_number),
                            styles["Heading1"]))
     Story.append(barcode)
@@ -151,10 +148,9 @@ def print_student(student, dates, semester, styles, header):
     else:
         raise InvalidArgumentException("Bad semester")
 
-    if student.cymraeg:
-        table_content = [["Dyddiad", "Rhif", "Teitl", "Cod", "Tudalen", "Marc", "Marcwr"]]
-    else:
-        table_content = [["Date", "Number", "Title", "Code", "Page", "Mark", "Marker"]]
+    table_content = [[localise(student.lang, col_head, strings) 
+                      for col_head in
+                      ["Date", "Number", "Title", "Code", "Page", "Mark", "Marker"]]]
     table_style = [('BACKGROUND', (0,0), (-1,0), medium_grey),
                    ('INNERGRID', (0,0), (-1,-1), 0.25, black),
                    ('BOX', (0,0), (-1,-1), 0.25, black),
@@ -169,7 +165,7 @@ def print_student(student, dates, semester, styles, header):
                                 else experiment)
         line = [day.isoformat(),
                 canonical_experiment.number,
-                Paragraph((canonical_experiment.teitl if student.cymraeg else canonical_experiment.title) + 
+                Paragraph(localise(student.lang, canonical_experiment.title, strings) + 
                 ("" if canonical_experiment.writeup else "*"), styles["Normal"]),
                 canonical_experiment.acronym,
                 "", "", ""]
@@ -182,8 +178,7 @@ def print_student(student, dates, semester, styles, header):
     
     Story.append(table)
 
-    Story.append(Paragraph("* Peidiwch ag ysgrifennu am yr arbrofion hyn" if student.cymraeg else
-                           "* Do not write up these experiments", 
+    Story.append(Paragraph(localise(student.lang,"* Do not write up these experiments", strings), 
                            styles["Normal"]))
     
     return Story
@@ -193,8 +188,8 @@ if __name__ == "__main__":
     
     test_student = Student("360117", 
                            "Ed Bennett", 
-                           [Experiment(201, "Numerical Analysis", "Analeg Niwmerical", "NA", writeup=False)], 
-                           [Experiment("", "LabVIEW", "LabFIW", "LV", writeup=False)], 
+                           [Experiment(201, "Numerical Analysis", "NA", writeup=False)], 
+                           [Experiment("", "LabVIEW", "LV", writeup=False)], 
                            0,
                            False)
     build_document([test_student, test_student], [date.today()], 1, "test.pdf")

@@ -1,0 +1,43 @@
+#!/usr/bin/env python
+
+def localise(lang, string, db):
+    return db[lang].get(string, string)
+
+strings = {"cy": {"Numerical Analysis": "Dadansoddi Rhifiadol", 
+                  "LabVIEW Tutorial": "Tiwtorial LabVIEW",
+                  "Density of States": "Dwysedd Cyflyrau",
+                  "Electron Spin Resonance": "Cyseiniant Sbin Electronau",
+                  '<font face="AvenirNext">α</font>, <font face="AvenirNext">β</font>, and <font face="AvenirNext">γ</font>-radiation': 'Ymbelydredd <font face="AvenirNext">α</font>, <font face="AvenirNext">β</font> a <font face="AvenirNext">γ</font>',
+                  "Franck Hertz": "Franck Hertz",
+                  "Rutherford Scattering": "Gwasgariad Rutherford",
+                  "Hubble's Law": "Deddf Hubble",
+                  "Balmer Series of the Hydrogen Atom": "Cyfres Balmer yr Atom Hydrogen",
+                  "Viscosity": "Gludedd",
+                  "Polarimeter": "Polarimedr",
+                  "Multiple Slit Diffraction": "Diffreithiant Holltau Lluosog",
+                  "Edser Butler Method": "Dull Edser-Butler",
+                  "B/H Curve": "Cromlin B/H",
+                  "Spectroscopic Analysis": "Dadansoddiad Spectrosgopig",
+                  "LabVIEW": "LabVIEW",
+                  "Diffraction at a Straight Edge": "Diffreithiant gan ymyl syth",
+                  "Gyroscope": "Gyrosgop",
+                  "More Spectroscopic Analysis": "Rhogor o ddadansoddiad spectrosgopig",
+                  "Group project week 1": "Prosiect grŵp wythnos 1",
+                  "Group project week 2": "Prosiect grŵp wythnos 2",
+                  "Group project week 3": "Prosiect grŵp wythnos 3",
+                  "Group project week 4": "Prosiect grŵp wythnos 4",
+                  "Group project presentations": "Cyflwyniadau'r prosiectiau grŵp",
+                  "Report write-up time": "Amser i ysgrifennu adroddiad",
+                  "* Do not write up these experiments": "* Peidiwch ag ysgrifennu am yr arbrofion hyn",
+                  "Department of Physics • Lab Diary": "Adran Ffiseg • Dyddiadur Labordy",
+                  "Level {} • {}–{} TB{}": "Lefel {} • {}–{} BD{}",
+                  "Pair": "Pâr",
+                  'Mark': 'Marc',
+                  'Marker': 'Marcwr',
+                  'Date': 'Dyddiad',
+                  'Number': 'Rhif',
+                  'Code': 'Cod',
+                  'Page': 'Tudalen',
+                  'Title': 'Teitl'},
+           "en": {}}
+
