@@ -104,7 +104,25 @@ def unpleasantness(pairs):
                             for pair in pairs
                             for experiment in pair 
                             if experiment.undesirable)
-    return undesirable_count
+
+    very_undesirable_count = 0
+    for pair in pairs:
+        local_count = sum(1 for experiment in pair[1:11]
+                          if experiment.undesirable 
+                          or "Group project" in experiment.title
+                          or experiment.title == "LabVIEW") - 5
+        if local_count > 0:
+            very_undesirable_count += local_count ** 2
+
+        if len(pair) > 11:
+            local_count = sum(1 for experiment in pair[12:]
+                              if experiment.undesirable 
+                              or "Group project" in experiment.title
+                              or experiment.title == "LabVIEW") - 5
+            if local_count > 0:
+                very_undesirable_count += local_count ** 2
+
+    return undesirable_count + 5 * very_undesirable_count
 
 def unpleasant_badness(pairs):
     return sum(badness(pairs)) + 0.1 * unpleasantness(pairs)
