@@ -9,7 +9,7 @@ from math import exp
 from sys import exit
 from lab_defs import Experiment, teaching_length
 
-num_pairs = 68
+num_pairs = 56
 num_theory = 5
 pairs_per_cohort = ceil(num_pairs / 4)
 
@@ -21,28 +21,30 @@ experiments = {"DoS": Experiment(202, "Density of States", "DoS", writeup=False,
                "BG": Experiment(222, 
                                 '<font face="AvenirNext">α</font>, <font face="AvenirNext">β</font>, and <font face="AvenirNext">γ</font>-radiation', 
                                 "BG"),
-               "FH": Experiment(223, "Franck Hertz", "FH"),
+               "FHz": Experiment(223, "Franck Hertz", "FHz"),
                "RS": Experiment(224, "Rutherford Scattering", "RS"),
                "HL": Experiment(238, "Hubble's Law", "HL", writeup=False),
                "BS": Experiment(241, "Balmer Series of the Hydrogen Atom", "BS"),
-               "VIS": Experiment(242, "Viscosity", "VIS"),
-               "POL": Experiment(244, "Polarimeter", "POL", count=4),
+               "VIS": Experiment(242, "Measurement of Viscosity", "VIS"),
+               "POL": Experiment(244, "Polarimeter", "POL"),
                "MSD": Experiment(246, "Multiple Slit Diffraction", "MSD"),
                "EB": Experiment(247, "Edser Butler Method", "EB"),
                "BH": Experiment(261, "B/H Curve", "BH"),
-               "SA": Experiment(270, "Spectroscopic Analysis", "SA", writeup=False, undesirable=True),
-               "LV": Experiment(299, "LabVIEW", "LV", count=12, writeup=False, undesirable=True)}
+               "LV": Experiment(299, "LabVIEW: Calibrating a Thermistor", "LV", count=12, writeup=False, undesirable=True)}
 experiment_list = list(experiments.values())
 
 reserve_experiments = {"SE": Experiment(248, "Diffraction at a Straight Edge", "SE", 4, True, True),
+                       "EM": Experiment(204, "e/m", "EM", 2, True, True),
                        "GYR": Experiment(252, "Gyroscope", "GYR", 4, True, True), 
-                       "MSA": Experiment(271, "More Spectroscopic Analysis", "MSA", 50, False, True)}
+                       "MSA": Experiment(271, "More Spectroscopic Analysis", "MSA", 50, False, True),
+                       "SA": Experiment(270, "Spectroscopic Analysis", "SA", writeup=False, undesirable=True)}
 
-GP = ([Experiment("", "Group project week {}".format(i+1), "", count=20, fixed=True) for i in range(4)]
-      + [Experiment("", "Group project presentations", "", count=40, fixed=True)])
+GP = ([Experiment("", "Group Project – Week {}".format(i+1), "", count=20, fixed=True) for i in range(4)]
+      + [Experiment("", "Group Project – Presentations", "", count=40, fixed=True)])
 
 writeup1 = Experiment("", "Report write-up time", "", count=75, fixed=True)
 writeup2 = Experiment(" ", "Report write-up time", "", count=75, fixed=True)
+
 null_experiment = Experiment("", "", "", count=1000)
 bad_null = Experiment("", "", "—", count=0)
 
@@ -341,7 +343,7 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
         current_badness = sum(badness(pairs))
         if current_badness > 0:
             targetedupdate(pairs, beta)
-    
+
 #    shuffle_polarimeter(pairs)
     return pairs, True
 

@@ -25,7 +25,7 @@ from pdfrw.toreportlab import makerl
 
 import io
 
-from datetime import date
+from datetime import date, timedelta
 
 from loc import localise, strings
 
@@ -106,7 +106,7 @@ def build_document(students, dates, semester, filename, level=2):
         rightMargin = 30 * mm,
         leftmargin = 15 * mm,
         topMargin = 15 * mm,
-        bottomMargin = 30 * mm,
+        bottomMargin = 15 * mm,
         pagesize = A4,
         )
     
@@ -125,18 +125,46 @@ def build_document(students, dates, semester, filename, level=2):
     with open(filename, 'wb') as f:
         f.write(buf.getvalue())
 
+
+submission_both = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of report and lab diary', "")
+submission_diary = Experiment("", 'Submission of lab diary', "")
+
+def add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows):
+    '''Add a single row to the table. Unless there is report write up time, in which case add two
+    (using recursion), and return extra row count so that rows remain in sync.)'''
+    canonical_experiment = (all_experiments[experiment.acronym]
+	                    if experiment.acronym != ""
+			    else experiment)
+    line = [day.isoformat(),
+            canonical_experiment.number,
+            Paragraph(localise(student.lang, canonical_experiment.title, strings) +
+		      ("" if canonical_experiment.writeup else "*"), styles["Normal"]),
+            canonical_experiment.acronym,
+            "", "", ""]
+    table_content.append(line)
+    if i % 2 == 1:
+        table_style.append(('BACKGROUND', (0, i + extra_rows), (-1, i + extra_rows), light_grey))
+    if "Report write-up time" in canonical_experiment.title:
+        extra_rows += 1
+        add_row(i, student, submission_both, day + timedelta(days=1), table_content, table_style, styles, extra_rows)
+    if "Presentations" in canonical_experiment.title:
+        extra_rows += 1
+        add_row(i, student, submission_diary, day + timedelta(days=1), table_content, table_style, styles, extra_rows)
+    return extra_rows
+    
+        
 def print_student(student, dates, semester, styles, header):
     Story = []
     Story.extend(header)
 
-    barcode = code39.Standard39("{} {}".format(student.name, student.number), barWidth = 0.3 * mm)
-    barcode.barHeight = 15 * mm
-    barcode.hAlign = "CENTER"
+#    barcode = code39.Standard39("{} {}".format(student.name, student.number), barWidth = 0.3 * mm)
+#    barcode.barHeight = 15 * mm
+#    barcode.hAlign = "CENTER"
 
     pair = localise(student.lang, "Pair", strings)
-    Story.append(Paragraph("{} {}, {} {}".format(student.name, student.number, pair, student.pair_number),
+    Story.append(Paragraph("{} {}, {} {}".format(student.number, student.name[:-1], pair, student.pair_number),
                            styles["Heading1"]))
-    Story.append(barcode)
+#    Story.append(barcode)
     Story.append(Spacer(0, 5 * mm))
     
     if semester == 1:
@@ -159,20 +187,13 @@ def print_student(student, dates, semester, styles, header):
                    ('FONTSIZE', (0,0), (-1,-1), 11),
                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                    ('BOTTOMPADDING', (0,0), (-1,-1), 5)]
+    row_heights = [8 * mm] * (len(experiments) + 2 + len(experiments) // 11) # need one extra per term for report submissions & 1 for GPs
+
+    extra_rows = 1 # Header row
     for i, (day, experiment) in enumerate(zip(dates, experiments)):
-        canonical_experiment = (all_experiments[experiment.acronym] 
-                                if experiment.acronym != ""
-                                else experiment)
-        line = [day.isoformat(),
-                canonical_experiment.number,
-                Paragraph(localise(student.lang, canonical_experiment.title, strings) + 
-                ("" if canonical_experiment.writeup else "*"), styles["Normal"]),
-                canonical_experiment.acronym,
-                "", "", ""]
-        table_content.append(line)
-        if i % 2 == 1:
-            table_style.append(('BACKGROUND', (0,i+1), (-1,i+1), light_grey))
-    table = Table(table_content, colWidths=[None,None,75*mm,None,None,None], rowHeights=8*mm)
+        extra_rows = add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows)
+
+    table = Table(table_content, colWidths=[None,None,75*mm,None,None,None], rowHeights=row_heights)
     table.setStyle(table_style)
     table.hAlign = 'CENTER'
     
