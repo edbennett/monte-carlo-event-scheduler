@@ -1,6 +1,6 @@
 #!/bin/env python
 
-from lab_defs import Student, Experiment
+from lab_defs import Student, Experiment, teaching_length
 from lab_mc import all_experiments
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Flowable, PageBreak, ParagraphAndImage, Spacer
@@ -187,7 +187,7 @@ def print_student(student, dates, semester, styles, header):
                    ('FONTSIZE', (0,0), (-1,-1), 11),
                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                    ('BOTTOMPADDING', (0,0), (-1,-1), 5)]
-    row_heights = [8 * mm] * (len(experiments) + 2 + len(experiments) // 11) # need one extra per term for report submissions & 1 for GPs
+    row_heights = [8 * mm] * (len(experiments) + 2 + len(experiments) // teaching_length) # need one extra per term for report submissions & 1 for GPs
 
     extra_rows = 1 # Header row
     for i, (day, experiment) in enumerate(zip(dates, experiments)):
