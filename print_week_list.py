@@ -18,11 +18,7 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-from reportlab.lib.colors import CMYKColor
-swansea_blue = CMYKColor(1, 0.53, 0.04, 0.19)
-light_grey = CMYKColor(0, 0, 0, 0.1)
-medium_grey = CMYKColor(0, 0, 0, 0.2)
-black = CMYKColor(0, 0, 0, 1)
+from colours import swansea_blue, light_grey, medium_grey, black
 
 from pdfrw import PdfReader, PdfDict
 from pdfrw.buildxobj import pagexobj
