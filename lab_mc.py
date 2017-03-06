@@ -9,7 +9,7 @@ from math import exp
 from sys import exit
 from lab_defs import Experiment, teaching_length
 
-num_pairs = 56
+num_pairs = 52
 num_theory = 5
 pairs_per_cohort = ceil(num_pairs / 4)
 
@@ -50,15 +50,27 @@ bad_null = Experiment("", "", "—", count=0)
 
 all_experiments = {**experiments, **reserve_experiments, **tutorials}
 
-def cold_start():
+def cohort(pair_number):
+    if 0 <= pair_number <= 13:
+        return 0
+    elif 14 <= pair_number <= 27:
+        return 1
+    elif 28 <= pair_number <= 39:
+        return 2
+    elif 40 <= pair_number <= 51:
+        return 3
+    else:
+        raise ValueError("Pair is not in a cohort")
+
+def null_start():
     pairs = [[tutorials["NA"]] + [bad_null] * 10 for _ in range(num_pairs)]
 
-    for pair in pairs[num_theory:]:
-        pair.extend([tutorials["LVT"]] + [bad_null] * 10)
-        
     for pair_idx, pair in enumerate(pairs):
-        gp_semester = (2 * pair_idx) // num_pairs
-        semester_cohort = ((4 * pair_idx) // num_pairs) % 2
+        if pair_idx not in (list(range(num_theory)) + list(range(12,16))):
+            pair.extend([tutorials["LVT"]] + [bad_null] * 10)
+            
+        gp_semester = cohort(pair_idx) // 2
+        semester_cohort = cohort(pair_idx) % 2
         base = 1 + teaching_length * gp_semester + semester_cohort * 5
         pair[base:base+5] = GP
         if semester_cohort == 0:
@@ -72,6 +84,43 @@ def cold_start():
                 pair[teaching_length - 1] = writeup1
                 pair[teaching_length + teaching_length // 2] = writeup2
 
+    return pairs
+
+def cold_start():
+    canonical_ordering = ["POL", "VIS", "EB", "MSD", "RS", "BH", "DoS",
+                          "HL", "BG", "LV", "BS", "ESR", "FHz"]
+    assert len(canonical_ordering) == len(set(canonical_ordering))
+
+    pairs = null_start()
+    num_experiments = len(canonical_ordering)
+
+    for pair_index, pair in enumerate(pairs):
+        quad_offset = pair_index // 4
+        pair_experiments = (canonical_ordering[num_experiments - quad_offset:]
+                            + canonical_ordering[:num_experiments - quad_offset])
+        if cohort(pair_index) <= 1:
+            lv_offset = 4
+        else:
+            lv_offset = 10
+
+        lv_index = pair_experiments.index("LV")
+        if lv_index < lv_offset:
+            pair_experiments.pop(lv_index)
+            if cohort(pair_index) == 0:
+                lv_index += 9
+            elif cohort(pair_index) == 1:
+                lv_index += 4
+            elif lv_index < 5:
+                lv_index += 9
+            else:
+                lv_index += 4
+                
+            pair_experiments.insert(lv_index, "LV")
+        
+        for experiment_index, experiment in enumerate(pair):
+            if experiment == bad_null:
+                pair[experiment_index] = experiments[pair_experiments.pop(0)]
+    tableform(pairs)
     return pairs
 
 #def hot_start():
@@ -124,10 +173,10 @@ def unpleasantness(pairs):
             if local_count > 0:
                 very_undesirable_count += local_count ** 2
 
-    return undesirable_count + 5 * very_undesirable_count
+    return undesirable_count + 8 * very_undesirable_count
 
 def unpleasant_badness(pairs):
-    return sum(badness(pairs)) + 0.1 * unpleasantness(pairs)
+    return sum(badness(pairs)) + 0.2 * unpleasantness(pairs)
 
 def randomupdate(pairs, beta):
     while True:
@@ -265,6 +314,7 @@ def target_labview(pairs, beta):
             else:
                 pair[index_to_replace] = experiments["LV"]
                 return 0, old_badness
+    tableform(pairs)
     raise ValueError("targeting labview but looks OK")
 
 #def shuffle_polarimeter(pairs):
@@ -336,7 +386,8 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
     iterations = 0
     while (iterations < 10000 or sum(badness(pairs)) > 0) and unpleasantness(pairs) > 0:
         if iterations % 1000 == 0:
-            print(".", end="")
+#            print(".", end="")
+            print(unpleasantness(pairs))
         iterations += 1
         beta *= 1.001
         pleasantupdate(pairs, beta)
@@ -345,8 +396,9 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
             targetedupdate(pairs, beta)
 
 #    shuffle_polarimeter(pairs)
+    print(unpleasantness(pairs))
     return pairs, True
 
 if __name__ == "__main__":
-    pairs = schedule(cold_start)
+    pairs = schedule(null_start)#cold_start)
     tableform(pairs)
