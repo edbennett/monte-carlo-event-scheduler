@@ -10,19 +10,23 @@ from sys import argv
 from itertools import zip_longest
 from datetime import timedelta, date
 
-if __name__ == "__main__":
+def get_dates(argv):
     if len(argv) < 3:
-        # borrowing http://stackoverflow.com/questions/8801084/how-to-calculate-next-friday-in-python
+        # borrowing http://stackoverflow.com/questions/8801084/how-to-calculate-next-friday-in-python            
         to_date = date.today()
-        to_date += timedelta( (4-to_date.weekday()) % 7 - 1) # Get the Thursday before the next Friday
-        from_date = to_date - timedelta(-7)
+        to_date += timedelta( (4-to_date.weekday()) % 7 - 1) # Get the Thursday before the next Friday           
+        from_date = to_date - timedelta(7)
     elif len(argv) < 6:
         to_date = date.today()
-        to_date += timedelta( (4-to_date.weekday()) % 7 - 1) # Get the Thursday before the next Friday
+        to_date += timedelta( (4-to_date.weekday()) % 7 - 1) # Get the Thursday before the next Friday           
         from_date = date(int(argv[1]), int(argv[2]), int(argv[3]))
     else:
         to_date = date(int(argv[4]), int(argv[5]), int(argv[6]))
         from_date = date(int(argv[1]), int(argv[2]), int(argv[3]))
+    return to_date, from_date
+
+if __name__ == "__main__":
+    to_date, from_date = get_dates(argv)
 
     pairs = load_pairs("schedule.dat")
     students = get_students("students.csv")
