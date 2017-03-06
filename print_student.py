@@ -1,7 +1,8 @@
 #!/bin/env python
 
 from lab_defs import Student, Experiment, teaching_length
-from lab_mc import all_experiments
+from lab_mc import all_experiments, cohort
+from get_barcodes import get_barcode
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Flowable, PageBreak, ParagraphAndImage, Spacer
 from reportlab.graphics.barcode import code39
@@ -71,9 +72,9 @@ def build_document(students, dates, semester, filename, level=2, include_names=T
     with open(filename, 'wb') as f:
         f.write(buf.getvalue())
 
-
+submission_report = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of lab report', "")
 submission_both = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of report and lab diary', "")
-submission_diary = Experiment("", 'Submission of lab diary', "")
+submission_diary = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of lab diary', "")
 
 def add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows):
     '''Add a single row to the table. Unless there is report write up time, in which case add two
@@ -89,12 +90,29 @@ def add_row(i, student, experiment, day, table_content, table_style, styles, ext
     table_content.append(line)
     if i % 2 == 1:
         table_style.append(('BACKGROUND', (0, i + extra_rows), (-1, i + extra_rows), light_grey))
-    if "Report write-up time" in canonical_experiment.title:
-        extra_rows += 1
-        add_row(i, student, submission_both, day + timedelta(days=1), table_content, table_style, styles, extra_rows)
+
+    handin = False
+    diary = False
+    if ("Report write-up time" in canonical_experiment.title):
+        if (i + 1) % teaching_length == 0:
+            handin = True
+            diary = True
+            add_row(i, student, submission_both, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
+        else:
+            handin = True
+            add_row(i, student, submission_report, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
+
     if "Presentations" in canonical_experiment.title:
+        handin = True
+        diary = True
+        add_row(i, student, submission_diary, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
+
+    if handin:
         extra_rows += 1
-        add_row(i, student, submission_diary, day + timedelta(days=1), table_content, table_style, styles, extra_rows)
+    if diary:
+        table_style.append(('SPAN', (4, i + extra_rows - 1), (-1, i + extra_rows)))
+        table_content[-2].append(get_barcode(student.number, i))
+        
     return extra_rows
     
     
