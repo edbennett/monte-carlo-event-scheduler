@@ -43,7 +43,8 @@ def get_header(semester, styles, level=2, lang="en"):
     return [table, Spacer(0, 5 * mm)]
 
 
-def build_document(students, dates, semester, filename, level=2):
+def build_document(students, dates, semester, filename, level=2, include_names=True):
+#    print("build_document", include_names)
     buf = io.BytesIO()
     
     output_doc = SimpleDocTemplate(
@@ -62,7 +63,7 @@ def build_document(students, dates, semester, filename, level=2):
               "cy": get_header(semester, styles, level, "cy")}
 
     for student in students:
-        Story.extend(print_student(student, dates, semester, styles, header[student.lang]))
+        Story.extend(print_student(student, dates, semester, styles, header[student.lang], include_names))
         Story.append(PageBreak())
     del Story[-1]
     
@@ -83,9 +84,8 @@ def add_row(i, student, experiment, day, table_content, table_style, styles, ext
     line = [day.isoformat(),
             canonical_experiment.number,
             Paragraph(localise(student.lang, canonical_experiment.title, strings) +
-		      ("" if canonical_experiment.writeup else "*"), styles["Normal"]),
-            canonical_experiment.acronym,
-            "", "", ""]
+                      ("" if canonical_experiment.writeup else "*"), styles["Normal"]),
+                      canonical_experiment.acronym]
     table_content.append(line)
     if i % 2 == 1:
         table_style.append(('BACKGROUND', (0, i + extra_rows), (-1, i + extra_rows), light_grey))
@@ -97,8 +97,9 @@ def add_row(i, student, experiment, day, table_content, table_style, styles, ext
         add_row(i, student, submission_diary, day + timedelta(days=1), table_content, table_style, styles, extra_rows)
     return extra_rows
     
-        
-def print_student(student, dates, semester, styles, header):
+    
+def print_student(student, dates, semester, styles, header, include_names=True):
+#    print("print_student", include_names)
     Story = []
     Story.extend(header)
 
@@ -106,10 +107,18 @@ def print_student(student, dates, semester, styles, header):
 #    barcode.barHeight = 15 * mm
 #    barcode.hAlign = "CENTER"
 
-    pair = localise(student.lang, "Pair", strings)
-    Story.append(Paragraph("{} {}, {} {}".format(student.number, student.name[:-1], pair, student.pair_number),
-                           styles["Heading1"]))
-#    Story.append(barcode)
+    pair_text = localise(student.lang, "Pair", strings)
+    cohort_text = localise(student.lang, "Cohort", strings)
+    cohort_letter = ['A', 'B', 'C', 'D'][cohort(student.pair_number - 1)]
+    if include_names:
+        Story.append(Paragraph("{} {}, {} {}, {} {}".format(student.number, student.name,
+                                                            pair_text, student.pair_number,
+                                                            cohort_text, cohort_letter),
+                               styles["Heading1"]))
+    else:
+        Story.append(Paragraph("{} {}".format(pair_text, student.pair_number), styles["Heading1"]))
+        
+    #    Story.append(barcode)
     Story.append(Spacer(0, 5 * mm))
     
     if semester == 1:
@@ -121,9 +130,11 @@ def print_student(student, dates, semester, styles, header):
     else:
         raise InvalidArgumentException("Bad semester")
 
+    col_heads = ["Date", "Number", "Title", "Code"] + (["Page", "Mark", "Marker"]
+                                                       if include_names
+                                                       else [])
     table_content = [[localise(student.lang, col_head, strings) 
-                      for col_head in
-                      ["Date", "Number", "Title", "Code", "Page", "Mark", "Marker"]]]
+                      for col_head in col_heads]]
     table_style = [('BACKGROUND', (0,0), (-1,0), medium_grey),
                    ('INNERGRID', (0,0), (-1,-1), 0.25, black),
                    ('BOX', (0,0), (-1,-1), 0.25, black),
@@ -132,13 +143,16 @@ def print_student(student, dates, semester, styles, header):
                    ('FONTSIZE', (0,0), (-1,-1), 11),
                    ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
                    ('BOTTOMPADDING', (0,0), (-1,-1), 5)]
-    row_heights = [8 * mm] * (len(experiments) + 2 + len(experiments) // teaching_length) # need one extra per term for report submissions & 1 for GPs
 
     extra_rows = 1 # Header row
     for i, (day, experiment) in enumerate(zip(dates, experiments)):
         extra_rows = add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows)
 
-    table = Table(table_content, colWidths=[None,None,75*mm,None,None,None], rowHeights=row_heights)
+    row_heights = [8 * mm] * len(table_content)
+    table = Table(table_content,
+                  colWidths=[None,None,75*mm, None] + ([13 * mm, 13 * mm, 16 * mm] if include_names else []),
+                  rowHeights=row_heights)
+        
     table.setStyle(table_style)
     table.hAlign = 'CENTER'
     
