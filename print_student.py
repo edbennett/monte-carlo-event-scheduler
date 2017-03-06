@@ -25,43 +25,7 @@ from datetime import date, timedelta
 
 from loc import localise, strings
 
-
-class PdfImage(Flowable):
-    '''from http://stackoverflow.com/questions/31712386/loading-matplotlib-object-into-reportlab/'''
-    def __init__(self, img_data, width=200, height=200):
-        self.img_width = width
-        self.img_height = height
-        self.img_data = img_data
-
-    def wrap(self, width, height):
-        return self.img_width, self.img_height
-
-    def drawOn(self, canv, x, y, _sW=0):
-        if _sW > 0 and hasattr(self, 'hAlign'):
-            a = self.hAlign
-            if a in ('CENTER', 'CENTRE', TA_CENTER):
-                x += 0.5*_sW
-            elif a in ('RIGHT', TA_RIGHT):
-                x += _sW
-            elif a not in ('LEFT', TA_LEFT):
-                raise ValueError("Bad hAlign value " + str(a))
-        canv.saveState()
-        img = self.img_data
-        if isinstance(img, PdfDict):
-            xscale = self.img_width / img.BBox[2]
-            yscale = xscale
-            self.img_height = img.BBox[3] * yscale
-#            yscale = self.img_height / img.BBox[3]
-
-            canv.translate(x, y)
-            canv.scale(xscale, yscale)
-            canv.doForm(makerl(canv, img))
-        else:
-            canv.drawImage(img, x, y, self.img_width, self.img_height)
-        canv.restoreState()
-
-s = 0.7
-swansea_logo = PdfImage(pagexobj(PdfReader("swansea.pdf").pages[0]), 130 * s, 81 * s)
+from brand import swansea_logo, logo_width, get_styles
 
 def get_header(semester, styles, level=2, lang="en"):
     title1 = localise(lang, "Department of Physics • Lab Diary", strings)
@@ -73,26 +37,11 @@ def get_header(semester, styles, level=2, lang="en"):
                                          date.today().year + 1,
                                          semester),
                            styles["Title"])]]]
-    table = Table(contents, [130, (210 - 15 - 25) * mm - 130])
+    table = Table(contents, [logo_width, (210 - 15 - 25) * mm - logo_width])
     table_style = [('VALIGN', (0,0), (-1,-1), 'MIDDLE')]
     table.setStyle(table_style)
     return [table, Spacer(0, 5 * mm)]
 
-def get_styles():
-    pdfmetrics.registerFont(TTFont('Cosmos', 'CosmosBQ-Medium.ttf'))
-    pdfmetrics.registerFont(TTFont('Futura', 'Futura-Book.ttf'))
-    pdfmetrics.registerFont(TTFont('FuturaHeavy', 'Futura-Heavy.ttf'))
-    pdfmetrics.registerFont(TTFont('AvenirNext', 'Avenir Next.ttc', subfontIndex=5))
-
-    styles = getSampleStyleSheet()
-    styles["Title"].textColor = swansea_blue
-    styles["Title"].fontName = "Cosmos"
-    styles["Heading1"].alignment = TA_CENTER
-    styles["Heading1"].fontName = "Futura"#Heavy                                                                                                                                
-    styles["Normal"].fontName = "Futura"
-    styles["Normal"].fontSize = 11
-    
-    return styles
 
 def build_document(students, dates, semester, filename, level=2):
     buf = io.BytesIO()
