@@ -49,7 +49,7 @@ def build_document(students, dates, semester, filename, level=2):
     output_doc = SimpleDocTemplate(
         buf,
         rightMargin = 30 * mm,
-        leftmargin = 15 * mm,
+        leftMargin = 15 * mm,
         topMargin = 15 * mm,
         bottomMargin = 15 * mm,
         pagesize = A4,
