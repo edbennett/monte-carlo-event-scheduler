@@ -8,6 +8,8 @@ from lab_mc import experiments, tutorials, null_experiment
 experiments["LVT"] = tutorials["LVT"]
 
 from print_student import get_styles, swansea_logo
+from assign_students import get_students, match_students
+from loadstore import load_pairs
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Flowable, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -111,8 +113,14 @@ def build_document(experiments_by_week, semester, level, filename):
 
 
 if __name__ == "__main__":
-    with open("schedule.dat", "rb") as f:
-        pairs = pickle.load(f)
+    pairs = load_pairs("schedule.dat")        
+    students = get_students("students.csv")
+    match_students(students, pairs)
+
+    missing_pairs = list(set(range(len(pairs))) - {student.pair_number - 1 for student in students.values()})
+    missing_pairs.sort(reverse=True)
+    for pair in missing_pairs:
+        pairs.pop(pair)
 
     experiments_by_week = list(zip_longest(*pairs, fillvalue=null_experiment))
     build_document(experiments_by_week, "1+2", 2, "list.pdf")
