@@ -4,4 +4,8 @@ students.csv
 schedule.dat
 coversheets.pdf
 list.pdf
+marking*.pdf
+marksheet*.pdf
+barcodes*.pdf
+*.csv
 __pycache__
