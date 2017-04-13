@@ -78,7 +78,7 @@ def build_document(semester, students, experiments_to_mark, filename, level=2):
 def add_row(i, student, day, next_experiment, table_content, table_style, styles, extra_rows):
     cohort_letter = ['A', 'B', 'C', 'D'][cohort(student.pair_number - 1)]
     line = [day.isoformat(), student.number, student.name, student.pair_number,
-            cohort_letter, next_experiment] + [None] * 3
+            cohort_letter, next_experiment] + [None] * 2
     table_content.append(line)
     if i % 2 == 1:
         table_style.append(('BACKGROUND', (0, i + extra_rows), (-1, i + extra_rows), light_grey))
@@ -103,16 +103,26 @@ def get_instances(experiment, students, semester):
 
         if experiment in experiments:
             experiment_index = experiments.index(experiment)
-            next_experiment = experiments[experiment_index + 1]
-            if next_experiment.title.startswith("Report"):
-                next_experiment = "REPORT"
+            next_experiments = []
+            for i in range(1, 4):
+                next_experiment = experiments[experiment_index + i]
+                if next_experiment.title.startswith("Report"):
+                    next_experiments.append("REPORT")
+                    break
+                else:
+                    next_experiments.append(next_experiment.acronym)
+
+            # if next week is the report, they won't be available to mark
+            # they may want the experiment marked this week
+            # try to get it marked on Friday
+            if next_experiments == ['REPORT']:
                 mark_offset = 0
             else:
-                next_experiment = next_experiment.acronym
                 mark_offset = 1
                 
+            next_experiments_text = ', '.join(next_experiments)
             instances.append((dates[experiment_index + mark_offset] + timedelta(days=(1 - mark_offset)),
-                              student, next_experiment))
+                              student, next_experiments_text))
     return instances
 
 def print_experiment(experiment, students, semester, styles, header):
@@ -124,7 +134,7 @@ def print_experiment(experiment, students, semester, styles, header):
         
     Story.append(Spacer(0, 5 * mm))
     
-    col_heads = ["Mark Date", "Number", "Name", "Pair", "Cohort", "Next Exp.", "Mark", "Special", "On BB"]
+    col_heads = ["Mark Date", "Number", "Name", "Pair", "Cohort", "Next Three Expts.", "Mark", "On BB"]
 
     table_content = [col_heads]
     
