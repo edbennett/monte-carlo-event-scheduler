@@ -47,7 +47,7 @@ def get_header(semester, styles, level=2, lang="en"):
 def build_document(students, dates, semester, filename, level=2, include_names=True):
 #    print("build_document", include_names)
     buf = io.BytesIO()
-    
+
     output_doc = SimpleDocTemplate(
         buf,
         rightMargin = 30 * mm,
@@ -56,7 +56,7 @@ def build_document(students, dates, semester, filename, level=2, include_names=T
         bottomMargin = 15 * mm,
         pagesize = A4,
         )
-    
+
     styles = get_styles()
 
     Story = []
@@ -67,7 +67,7 @@ def build_document(students, dates, semester, filename, level=2, include_names=T
         Story.extend(print_student(student, dates, semester, styles, header[student.lang], include_names))
         Story.append(PageBreak())
     del Story[-1]
-    
+
     output_doc.build(Story)
     with open(filename, 'wb') as f:
         f.write(buf.getvalue())
@@ -76,7 +76,7 @@ submission_report = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submiss
 submission_both = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of report and lab diary', "")
 submission_diary = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of lab diary', "")
 
-def add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows):
+def add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows, with_barcodes=True):
     '''Add a single row to the table. Unless there is report write up time, in which case add two
     (using recursion), and return extra row count so that rows remain in sync.)'''
     canonical_experiment = (all_experiments[experiment.acronym]
@@ -94,13 +94,13 @@ def add_row(i, student, experiment, day, table_content, table_style, styles, ext
     handin = False
     diary = False
     if ("Report write-up time" in canonical_experiment.title):
-        if (i + 1) % teaching_length == 0:
+#        if (i + 1) % teaching_length == 0:
             handin = True
             diary = True
             add_row(i, student, submission_both, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
-        else:
-            handin = True
-            add_row(i, student, submission_report, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
+#        else:
+#            handin = True
+#            add_row(i, student, submission_report, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
 
     if "Presentations" in canonical_experiment.title:
         handin = True
@@ -110,12 +110,15 @@ def add_row(i, student, experiment, day, table_content, table_style, styles, ext
     if handin:
         extra_rows += 1
     if diary:
-        table_style.append(('SPAN', (4, i + extra_rows - 1), (-1, i + extra_rows)))
-        table_content[-2].append(get_barcode(student.number, i))
-        
+        if with_barcodes:
+            table_style.append(('SPAN', (4, i + extra_rows - 1), (-1, i + extra_rows)))
+            table_content[-2].append(get_barcode(student.number, i))
+        else:
+            table_style.append(('SPAN', (3, i + extra_rows - 1), (-1, i + extra_rows)))
+
     return extra_rows
-    
-    
+
+
 def print_student(student, dates, semester, styles, header, include_names=True):
 #    print("print_student", include_names)
     Story = []
@@ -135,10 +138,10 @@ def print_student(student, dates, semester, styles, header, include_names=True):
                                styles["Heading1"]))
     else:
         Story.append(Paragraph("{} {}".format(pair_text, student.pair_number), styles["Heading1"]))
-        
+
     #    Story.append(barcode)
     Story.append(Spacer(0, 5 * mm))
-    
+
     if semester == 1:
         experiments = student.tb1_experiments
     elif semester == 2:
@@ -164,26 +167,26 @@ def print_student(student, dates, semester, styles, header, include_names=True):
 
     extra_rows = 1 # Header row
     for i, (day, experiment) in enumerate(zip(dates, experiments)):
-        extra_rows = add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows)
+        extra_rows = add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows, include_names)
 
     row_heights = [8 * mm] * len(table_content)
     table = Table(table_content,
                   colWidths=[None,None,75*mm, None] + ([13 * mm, 13 * mm, 16 * mm] if include_names else []),
                   rowHeights=row_heights)
-        
+
     table.setStyle(table_style)
     table.hAlign = 'CENTER'
-    
+
     Story.append(table)
 
     Story.append(Paragraph(localise(student.lang,"* Do not write up these experiments", strings), 
                            styles["Normal"]))
-    
+
     return Story
 
 
 if __name__ == "__main__":
-    
+
     test_student = Student("360117", 
                            "Ed Bennett", 
                            [Experiment(201, "Numerical Analysis", "NA", writeup=False)], 
@@ -191,4 +194,3 @@ if __name__ == "__main__":
                            0,
                            False)
     build_document([test_student, test_student], [date.today()], 1, "test.pdf")
-    
