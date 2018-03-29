@@ -26,12 +26,16 @@ def process(filename):
                 
 barcodes1 = process("barcodes1.csv")
 barcodes2 = process("barcodes2.csv")
-barcodesA = process("barcodesA.csv")
-barcodesC = process("barcodesC.csv")
+barcodesAB = process("barcodesAB.csv")
+barcodesCD = process("barcodesCD.csv")
 
-barcodes_all = [barcodesA, barcodes1, barcodesC, barcodes2]
+#barcodes_all = [barcodesAB, barcodes1, barcodesCD, barcodes2]
+#event = {5: 0, 10: 1, 16: 2, 21: 3}
 
-event = {5: 0, 10: 1, 16: 2, 21: 3}
+barcodes_all = {5: barcodesAB,
+                10: barcodes1,
+                16: barcodesCD,
+                21: barcodes2}
 
 def get_barcode(student_number, week):
-     return barcodes_all[event[week]][student_number]
+     return barcodes_all[week][student_number]

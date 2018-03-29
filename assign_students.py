@@ -3,6 +3,7 @@
 import csv
 
 from lab_defs import Student, teaching_length
+from lab_mc import num_theory
 
 def get_students(filename):
     students = {}
@@ -15,7 +16,10 @@ def get_students(filename):
 def match_students(students, pairs):
     for student in students.values():
         student.tb1_experiments = pairs[student.pair_number - 1][:teaching_length]
-        student.tb2_experiments= pairs[student.pair_number - 1][teaching_length:]
+        if student.pair_number > num_theory:
+            student.tb2_experiments = pairs[student.pair_number - 1][teaching_length:]
+        else:
+            student.tb2_experiments = []
 
 
 if __name__ == "__main__":
