@@ -69,7 +69,7 @@ def null_start():
     for pair_idx, pair in enumerate(pairs):
         if pair_idx not in (list(range(num_theory))):
             pair.extend([tutorials["LVT"]] + [bad_null] * 10)
-            
+
         gp_semester = cohort(pair_idx) // 2
         semester_cohort = cohort(pair_idx) % 2
         base = 1 + teaching_length * gp_semester + semester_cohort * 5
@@ -115,7 +115,7 @@ def cold_start():
                 lv_index += 9
             else:
                 lv_index += 4
-                
+
             pair_experiments.insert(lv_index, "LV")
         
         for experiment_index, experiment in enumerate(pair):
@@ -159,22 +159,26 @@ def unpleasantness(pairs):
 
     very_undesirable_count = 0
     for pair in pairs:
-        local_count = sum(1 for experiment in pair[1:11]
-                          if experiment.undesirable 
-                          or "Group project" in experiment.title
-                          or experiment.title == "LabVIEW") - 5
+        local_count = max(sum(1 for experiment in pair[1:11]
+                              if experiment.undesirable
+                              or experiment.writeup == False
+                              or "Group project" in experiment.title
+                              or experiment.title == "LabVIEW") - 5,
+                          0)
         if local_count > 0:
-            very_undesirable_count += local_count ** 2
+            very_undesirable_count += local_count ** 3
 
         if len(pair) > 11:
-            local_count = sum(1 for experiment in pair[12:]
-                              if experiment.undesirable 
-                              or "Group project" in experiment.title
-                              or experiment.title == "LabVIEW") - 5
+            local_count = max(sum(1 for experiment in pair[12:]
+                                  if experiment.undesirable
+                                  or experiment.writeup == False
+                                  or "Group project" in experiment.title
+                                  or experiment.title == "LabVIEW") - 5,
+                              0)
             if local_count > 0:
-                very_undesirable_count += local_count ** 2
+                very_undesirable_count += local_count ** 3
 
-    return undesirable_count + 8 * very_undesirable_count
+    return undesirable_count + very_undesirable_count
 
 def unpleasant_badness(pairs):
     return sum(badness(pairs)) + 0.2 * unpleasantness(pairs)
@@ -205,6 +209,11 @@ def pleasantupdate(pairs, beta):
                               for pair_index, pair in enumerate(pairs)
                               for experiment_index, experiment in enumerate(pair)
                               if experiment.undesirable]
+
+    if unpleasant_experiments == []:
+        tableform(pairs)
+        raise ValueError("No unpleasant experiments??")
+
     pair, week = choice(unpleasant_experiments)
     old_expt = pairs[pair][week]
     old_badness = unpleasant_badness(pairs)
@@ -281,6 +290,7 @@ def target_resources(pairs, beta):
     raise ValueError("targeting resources but look OK")
 
 def target_labview(pairs, beta):
+    dbg_indices = []
     for pair_index, pair in enumerate(pairs):
         if pair_index >= num_theory and experiments["LV"] not in pair:
             old_badness = unpleasant_badness(pairs)
@@ -302,10 +312,12 @@ def target_labview(pairs, beta):
 
         indices = [i for i, j in enumerate(pair)
                    if j == experiments["LV"]]
-        if len(indices) > 1:
+        if len(indices) == 0:
+            continue
+        if len(indices) > 1 or indices[0] < teaching_length:
             old_badness = unpleasant_badness(pairs)
             index_to_replace = choice(indices)
-            pair[index_to_replace] = choice(experiments)
+            pair[index_to_replace] = choice(experiment_list)
             new_badness = unpleasant_badness(pairs)
 
             if new_badness <= old_badness:
@@ -315,7 +327,9 @@ def target_labview(pairs, beta):
             else:
                 pair[index_to_replace] = experiments["LV"]
                 return 0, old_badness
+        dbg_indices.append(indices)
     tableform(pairs)
+    print(dbg_indices)
     raise ValueError("targeting labview but looks OK")
 
 #def shuffle_polarimeter(pairs):
@@ -339,7 +353,11 @@ def targetedupdate(pairs, beta):
     elif resource_badness > 0:
         return target_resources(pairs, beta)
     elif labview_badness > 0:
-        return target_labview(pairs, beta)
+        try:
+            return target_labview(pairs, beta)
+        except ValueError as ex:
+            print(duplicate_badness, resource_badness, labview_badness)
+            raise ex
     else:
         raise ValueError("Nothing to do!")
 
@@ -353,7 +371,7 @@ def schedule(start):
     pairs = start()
     current_badness = sum(badness(pairs))
     iterations = 0
-    beta = 10
+    beta = 1
     accept = 0
     update = targetedupdate
     
@@ -370,7 +388,7 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
 #                else:
 #                    update = randomupdate
                 accept = 0
-                beta *= 1.01
+                beta *= 1.005
                 
             step_accept, current_badness = update(pairs, beta)
             current_badness = sum(badness(pairs))
@@ -385,18 +403,29 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
         return pairs, False
 
     iterations = 0
-    while (iterations < 10000 or sum(badness(pairs)) > 0) and unpleasantness(pairs) > 0:
-        if iterations % 1000 == 0:
-#            print(".", end="")
-            print(unpleasantness(pairs))
-        iterations += 1
-        beta *= 1.001
-        pleasantupdate(pairs, beta)
-        current_badness = sum(badness(pairs))
-        if current_badness > 0:
-            targetedupdate(pairs, beta)
+    acc = 0
+    terminating = False
+    while (iterations < 1000000 and unpleasantness(pairs) > 0 and not terminating) or sum(badness(pairs)) > 0:
+        try:
+            if iterations % 1000 == 0:
+                print(unpleasantness(pairs), acc/1000)
+                acc = 0
+            iterations += 1
+            beta *= 1.00001
+            if sum(badness(pairs)) > 0:
+                acc += targetedupdate(pairs, beta)[0]
+            else:
+                acc += pleasantupdate(pairs, beta)[0]
+        except KeyboardInterrupt as ki:
+            if terminating:
+                tableform(pairs)
+                raise ki
+            else:
+                terminating = True
+                print("OK, will get badness to zero and give a result")
 
 #    shuffle_polarimeter(pairs)
+    print(badness(pairs))
     print(unpleasantness(pairs))
     return pairs, True
 
