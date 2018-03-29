@@ -6,6 +6,7 @@ def localise(lang, string, db):
 strings = {"cy": {"Numerical Analysis": "Dadansoddi Rhifiadol", 
                   "LabVIEW Tutorial": "Tiwtorial LabVIEW",
                   "Density of States": "Dwysedd Cyflyrau",
+                  "Chaotic Double Pendulum": "Pendil Dwbl Caotig",
                   "Electron Spin Resonance": "Cyseiniant Sbin Electronau",
                   '<font face="AvenirNext">α</font>, <font face="AvenirNext">β</font>, and <font face="AvenirNext">γ</font>-radiation': 'Ymbelydredd <font face="AvenirNext">α</font>, <font face="AvenirNext">β</font> a <font face="AvenirNext">γ</font>',
                   "Franck Hertz": "Franck Hertz",

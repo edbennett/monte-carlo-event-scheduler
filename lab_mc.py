@@ -16,14 +16,14 @@ pairs_per_cohort = ceil(num_pairs / 4)
 tutorials = {"NA": Experiment(201, "Numerical Analysis", "NA", count=75, writeup=False, fixed=True),
              "LVT": Experiment(298, "LabVIEW Tutorial", "LVT", count=75, writeup=False, fixed=True)}
 
-experiments = {"DoS": Experiment(202, "Density of States", "DoS", writeup=False, undesirable=True),
+experiments = {"CDP": Experiment(204, "Chaotic Double Pendulum", "CDP", writeup=False, undesirable=True),
                "ESR": Experiment(221, "Electron Spin Resonance", "ESR"),
                "BG": Experiment(222, 
                                 '<font face="AvenirNext">α</font>, <font face="AvenirNext">β</font>, and <font face="AvenirNext">γ</font>-radiation', 
                                 "BG"),
                "FHz": Experiment(223, "Franck Hertz", "FHz"),
                "RS": Experiment(224, "Rutherford Scattering", "RS"),
-               "HL": Experiment(238, "Hubble's Law", "HL", writeup=False),
+               "HL": Experiment(238, "Hubble's Law", "HL", writeup=False, undesirable=True),
                "BS": Experiment(241, "Balmer Series of the Hydrogen Atom", "BS"),
                "VIS": Experiment(242, "Measurement of Viscosity", "VIS"),
                "POL": Experiment(244, "Polarimeter", "POL"),
@@ -33,7 +33,8 @@ experiments = {"DoS": Experiment(202, "Density of States", "DoS", writeup=False,
                "LV": Experiment(299, "LabVIEW: Calibrating a Thermistor", "LV", count=12, writeup=False, undesirable=True)}
 experiment_list = list(experiments.values())
 
-reserve_experiments = {"SE": Experiment(248, "Diffraction at a Straight Edge", "SE", 4, True, True),
+reserve_experiments = {"DoS": Experiment(202, "Density of States", "DoS", writeup=False, undesirable=True),
+                       "SE": Experiment(248, "Diffraction at a Straight Edge", "SE", 4, True, True),
                        "EM": Experiment(204, "e/m", "EM", 2, True, True),
                        "GYR": Experiment(252, "Gyroscope", "GYR", 4, True, True), 
                        "MSA": Experiment(271, "More Spectroscopic Analysis", "MSA", 50, False, True),
@@ -87,8 +88,8 @@ def null_start():
     return pairs
 
 def cold_start():
-    canonical_ordering = ["POL", "VIS", "EB", "MSD", "RS", "BH", "DoS",
-                          "HL", "BG", "LV", "BS", "ESR", "FHz"]
+    canonical_ordering = ["POL", "EB", "MSD", "RS", "BH", "CDP",
+                          "HL", "VIS", "BG", "LV", "BS", "ESR", "FHz"]
     assert len(canonical_ordering) == len(set(canonical_ordering))
 
     pairs = null_start()
