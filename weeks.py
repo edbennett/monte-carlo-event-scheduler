@@ -2,10 +2,10 @@
 
 from datetime import date, timedelta
 from lab_defs import teaching_length
-start_michaelmas = date(2016, 10, 6)
-start_hilary = date(2017, 2, 9)
-hilary_length = 9
-start_trinity = date(2017, 5, 4)
+start_michaelmas = date(2017, 10, 5)
+start_hilary = date(2018, 2, 8)
+hilary_length = 7
+start_trinity = date(2018, 4, 19)
 trinity_length = teaching_length - hilary_length
 
 semester1_dates = [start_michaelmas + timedelta(days = i * 7) for i in range(teaching_length)]
