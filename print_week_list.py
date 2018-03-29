@@ -51,7 +51,7 @@ def build_table(experiments_by_week, semester, styles):
     if semester == 1:
         dates = semester1_dates
         experiments_by_week = experiments_by_week[:teaching_length]
-    elif semester == 1:
+    elif semester == 2:
         dates = semester2_dates
         experiments_by_week = experiments_by_week[teaching_length:]
     elif semester == "1+2":
