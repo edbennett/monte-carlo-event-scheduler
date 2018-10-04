@@ -3,6 +3,7 @@ test.pdf
 students.csv
 schedule.dat
 coversheets.pdf
+anon.pdf
 list.pdf
 marking*.pdf
 marksheet*.pdf
@@ -11,3 +12,5 @@ barcodes*.pdf
 *.dat
 __pycache__
 20*
+*.ttf
+*.pyc
