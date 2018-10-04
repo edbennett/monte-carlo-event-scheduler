@@ -8,5 +8,6 @@ marking*.pdf
 marksheet*.pdf
 barcodes*.pdf
 *.csv
+*.dat
 __pycache__
 
