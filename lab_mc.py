@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from collections import namedtuple
+from copy import deepcopy
 from math import ceil
 from collections import Counter
 from itertools import zip_longest 
@@ -134,7 +135,7 @@ def badness(pairs):
 
     experiments_by_week = list(zip_longest(*pairs, fillvalue=null_experiment))
 
-    for pair in pairs:
+    for pair_index, pair in enumerate(pairs):
         duplicate_badness += 5 * (1 - len(set(pair)) / len(pair))
         if len(pair) > teaching_length and experiments["LV"] not in pair:
             labview_badness += 1
@@ -158,11 +159,11 @@ def unpleasantness(pairs):
                             if experiment.undesirable)
 
     very_undesirable_count = 0
-    for pair in pairs:
+    for pair_index, pair in enumerate(pairs):
         local_count = max(sum(1 for experiment in pair[1:11]
                               if experiment.undesirable
                               or experiment.writeup == False
-                              or "Group project" in experiment.title
+                              or "Group Project" in experiment.title
                               or experiment.title == "LabVIEW") - 5,
                           0)
         if local_count > 0:
@@ -172,11 +173,13 @@ def unpleasantness(pairs):
             local_count = max(sum(1 for experiment in pair[12:]
                                   if experiment.undesirable
                                   or experiment.writeup == False
-                                  or "Group project" in experiment.title
+                                  or "Group Project" in experiment.title
                                   or experiment.title == "LabVIEW") - 5,
                               0)
             if local_count > 0:
                 very_undesirable_count += local_count ** 3
+        if pair_index < num_theory and experiments["EB"] not in pair:
+            very_undesirable_count += 1000
 
     return undesirable_count + very_undesirable_count
 
@@ -388,7 +391,7 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
 #                else:
 #                    update = randomupdate
                 accept = 0
-                beta *= 1.005
+                beta *= 1.05
                 
             step_accept, current_badness = update(pairs, beta)
             current_badness = sum(badness(pairs))
@@ -405,17 +408,24 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
     iterations = 0
     acc = 0
     terminating = False
+    min_unpleasantness = unpleasantness(pairs)
+    minimally_unpleasant_state = deepcopy(pairs)
     while (iterations < 1000000 and unpleasantness(pairs) > 0 and not terminating) or sum(badness(pairs)) > 0:
         try:
             if iterations % 1000 == 0:
-                print(unpleasantness(pairs), acc/1000)
+                print(unpleasantness(pairs), acc/1000, min_unpleasantness, beta)
                 acc = 0
             iterations += 1
-            beta *= 1.00001
+            beta *= 1.0001
             if sum(badness(pairs)) > 0:
                 acc += targetedupdate(pairs, beta)[0]
             else:
                 acc += pleasantupdate(pairs, beta)[0]
+            current_unpleasantness = unpleasantness(pairs)
+            if current_unpleasantness < min_unpleasantness:
+                min_unpleasantness = current_unpleasantness
+                minimally_unpleasant_state = deepcopy(pairs)
+                
         except KeyboardInterrupt as ki:
             if terminating:
                 tableform(pairs)
@@ -427,7 +437,7 @@ Ctrl+C stops and outputs current progress.'''.format(current_badness, accept / 1
 #    shuffle_polarimeter(pairs)
     print(badness(pairs))
     print(unpleasantness(pairs))
-    return pairs, True
+    return minimally_unpleasant_state, True
 
 if __name__ == "__main__":
     pairs = schedule(null_start)#cold_start)
