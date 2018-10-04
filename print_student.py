@@ -28,6 +28,33 @@ from loc import localise, strings
 
 from brand import swansea_logo, logo_width, get_styles
 
+
+class NullDay:
+    '''Provide a mechanism for returning a blank when a DateTime is expected'''
+    def isoformat(self):
+        '''Pretend to be a DateTime by offering an isoformat method that
+        returns an empty string'''
+        return ''
+
+
+GP_LINE = {
+    "en": ["",
+           "",
+           "Group project",
+           "Meeting /5",
+           "Page",
+           "Diary /10",
+           "Marker"],
+    "cy": ["",
+           "",
+           "Prosiect Grŵp",
+           "Cyfarfod /5",
+           "Tudalen",
+           "Dyddiadur /10",
+           "Marcwr"]
+}
+
+
 def get_header(semester, styles, level=2, lang="en"):
     title1 = localise(lang, "Department of Physics • Lab Diary", strings)
     title2 = "Level {} • {}–{} TB{}"
@@ -74,30 +101,50 @@ def build_document(students, dates, semester, filename, level=2, include_names=T
 
 submission_report = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of lab report', "")
 submission_both = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of report and lab diary', "")
-submission_diary = Experiment("", '<font face="FuturaHeavy">4pm</font>: Submission of lab diary', "")
+submission_diary = Experiment("", 'Submission of lab diary', "")
 
-def add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows, with_barcodes=True):
+def add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows, row_heights, with_barcodes=True):
     '''Add a single row to the table. Unless there is report write up time, in which case add two
     (using recursion), and return extra row count so that rows remain in sync.)'''
     canonical_experiment = (all_experiments[experiment.acronym]
-	                    if experiment.acronym != ""
-			    else experiment)
+                            if experiment.acronym != ""
+                            else experiment)
+    if "Week 1" in canonical_experiment.title and len(table_content[0]) > 4:
+        table_content.append(GP_LINE[student.lang])
+        extra_rows += 1
+        if i % 2 == 0:
+            table_style.append(('BACKGROUND', (0, i + extra_rows - 1), (-1, i + extra_rows), light_grey))
+        table_style.append(('FONTSIZE', (0, i + extra_rows - 1), (-1, i + extra_rows - 1), 6))
+        table_style.append(('BOTTOMPADDING', (0, i + extra_rows - 1), (-1, i + extra_rows - 1), 0))
+        table_style.append(('BACKGROUND', (3, i + extra_rows), (3, i + extra_rows), black))
+        row_heights.append(4 * mm)
+    elif i % 2 == 0:
+        table_style.append(('BACKGROUND', (0, i + extra_rows), (-1, i + extra_rows), light_grey))
+
+    if ("Presentations" in canonical_experiment.title and
+            len(table_content[0]) > 4):
+        table_style.append(('BACKGROUND', (5, i + extra_rows), (5, i + extra_rows), black))
+    
     line = [day.isoformat(),
             canonical_experiment.number,
             Paragraph(localise(student.lang, canonical_experiment.title, strings) +
                       ("" if canonical_experiment.writeup else "*"), styles["Normal"]),
                       canonical_experiment.acronym]
     table_content.append(line)
-    if i % 2 == 1:
-        table_style.append(('BACKGROUND', (0, i + extra_rows), (-1, i + extra_rows), light_grey))
+    row_heights.append(8 * mm)
+        
+    if i == 11:
+        table_style.append(('LINEABOVE', (0, i + extra_rows), (-1, i + extra_rows), 3, black))
 
     handin = False
     diary = False
+    gps = False
+    
     if ("Report write-up time" in canonical_experiment.title):
 #        if (i + 1) % teaching_length == 0:
             handin = True
             diary = True
-            add_row(i, student, submission_both, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
+            add_row(i, student, submission_both, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1, row_heights)
 #        else:
 #            handin = True
 #            add_row(i, student, submission_report, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
@@ -105,16 +152,28 @@ def add_row(i, student, experiment, day, table_content, table_style, styles, ext
     if "Presentations" in canonical_experiment.title:
         handin = True
         diary = True
-        add_row(i, student, submission_diary, day + timedelta(days=1), table_content, table_style, styles, extra_rows + 1)
+        gps = True
+        
+        add_row(i, student, submission_diary, NullDay(), table_content, table_style, styles, extra_rows + 1, row_heights)
+        table_style.append((
+            'SPAN',
+            (0, i + extra_rows),
+            (0, i + extra_rows + 1)
+        ))
 
     if handin:
         extra_rows += 1
     if diary:
-        if with_barcodes:
-            table_style.append(('SPAN', (4, i + extra_rows - 1), (-1, i + extra_rows)))
-            table_content[-2].append(get_barcode(student.number, i))
+        if gps:
+            barcode_offset = 0
         else:
-            table_style.append(('SPAN', (3, i + extra_rows - 1), (-1, i + extra_rows)))
+            barcode_offset = 1
+            
+        if with_barcodes:
+            table_style.append(('SPAN', (4, i + extra_rows - barcode_offset), (-1, i + extra_rows)))
+            table_content[-1 - barcode_offset].append(get_barcode(student.number, i, gps))
+        else:
+            table_style.append(('SPAN', (3, i + extra_rows - barcode_offset), (-1, i + extra_rows)))
 
     return extra_rows
 
@@ -151,7 +210,7 @@ def print_student(student, dates, semester, styles, header, include_names=True):
     else:
         raise InvalidArgumentException("Bad semester")
 
-    col_heads = ["Date", "Number", "Title", "Code"] + (["Page", "Mark", "Marker"]
+    col_heads = ["Date", "Number", "Title", "Code"] + (["Page", "Mark /10", "Marker"]
                                                        if include_names
                                                        else [])
     table_content = [[localise(student.lang, col_head, strings) 
@@ -166,12 +225,14 @@ def print_student(student, dates, semester, styles, header, include_names=True):
                    ('BOTTOMPADDING', (0,0), (-1,-1), 5)]
 
     extra_rows = 1 # Header row
+    row_heights = [8 * mm]
     for i, (day, experiment) in enumerate(zip(dates, experiments)):
-        extra_rows = add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows, include_names)
+        extra_rows = add_row(i, student, experiment, day, table_content, table_style, styles, extra_rows, row_heights, include_names)
 
-    row_heights = [8 * mm] * len(table_content)
     table = Table(table_content,
-                  colWidths=[None,None,75*mm, None] + ([13 * mm, 13 * mm, 16 * mm] if include_names else []),
+                  colWidths=([None, None, 75 * mm, 16 * mm] +
+                             ([16 * mm, 19 * mm, 16 * mm]
+                              if include_names else [])),
                   rowHeights=row_heights)
 
     table.setStyle(table_style)
