@@ -1,4 +1,4 @@
-*.py~
+*~
 test.pdf
 students.csv
 schedule.dat
@@ -9,3 +9,4 @@ marksheet*.pdf
 barcodes*.pdf
 *.csv
 __pycache__
+
