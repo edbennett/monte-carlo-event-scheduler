@@ -32,6 +32,7 @@ from sys import argv
 
 from brand import swansea_logo, logo_width, get_styles
 
+
 def get_header(semester, styles, level=2, lang="en"):
     title1 = localise(lang, "Department of Physics • Mark Sheet", strings)
     title2 = "Level {} • {}–{} TB{}"
@@ -99,7 +100,7 @@ def get_instances(experiment, students, semester):
             experiments = student.tb1_experiments + student.tb2_experiments
             dates = all_dates
         else:
-            raise InvalidArgumentException("Bad semester")
+            raise ValueError("Bad semester")
 
         if experiment in experiments:
             experiment_index = experiments.index(experiment)
