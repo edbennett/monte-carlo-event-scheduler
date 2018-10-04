@@ -10,4 +10,4 @@ barcodes*.pdf
 *.csv
 *.dat
 __pycache__
-
+20*
