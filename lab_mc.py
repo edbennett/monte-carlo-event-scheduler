@@ -10,8 +10,8 @@ from math import exp
 from sys import exit
 from lab_defs import Experiment, teaching_length
 
-num_pairs = 57
-num_theory = 9
+num_pairs = 40
+num_theory = 5
 pairs_per_cohort = ceil(num_pairs / 4)
 
 tutorials = {"NA": Experiment(201, "Numerical Analysis", "NA", count=75, writeup=False, fixed=True),
@@ -53,13 +53,13 @@ bad_null = Experiment("", "", "—", count=0)
 all_experiments = {**experiments, **reserve_experiments, **tutorials}
 
 def cohort(pair_number):
-    if 0 <= pair_number <= 13:
+    if 0 <= pair_number <= 9:
         return 0
-    elif 14 <= pair_number <= 27:
+    elif 10 <= pair_number <= 19:
         return 1
-    elif 28 <= pair_number <= 41:
+    elif 20 <= pair_number <= 29:
         return 2
-    elif 42 <= pair_number <= 56:
+    elif 30 <= pair_number <= 39:
         return 3
     else:
         raise ValueError("Pair is not in a cohort")
