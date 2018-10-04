@@ -42,7 +42,7 @@ reserve_experiments = {"DoS": Experiment(202, "Density of States", "DoS", writeu
                        "SA": Experiment(270, "Spectroscopic Analysis", "SA", writeup=False, undesirable=True)}
 
 GP = ([Experiment("", "Group Project – Week {}".format(i+1), "", count=20, fixed=True) for i in range(4)]
-      + [Experiment("", "Group Project – Presentations", "", count=40, fixed=True)])
+      + [Experiment("", "Group Project – Presentations /100", "", count=40, fixed=True)])
 
 writeup1 = Experiment("", "Report write-up time", "", count=75, fixed=True)
 writeup2 = Experiment(" ", "Report write-up time", "", count=75, fixed=True)
