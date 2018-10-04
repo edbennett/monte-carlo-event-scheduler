@@ -11,8 +11,8 @@ from reportlab.lib.units import mm
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
 
-from reportlab.pdfbase import pdfmetrics 
-from reportlab.pdfbase.ttfonts import TTFont 
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 from colours import swansea_blue, light_grey, medium_grey, black
 
@@ -66,13 +66,14 @@ def get_header(semester, styles, level=2, lang="en"):
                                          semester),
                            styles["Title"])]]]
     table = Table(contents, [logo_width, (210 - 15 - 25) * mm - logo_width])
-    table_style = [('VALIGN', (0,0), (-1,-1), 'MIDDLE')]
+    table_style = [('VALIGN', (0, 0), (-1, -1), 'MIDDLE')]
     table.setStyle(table_style)
     return [table, Spacer(0, 5 * mm)]
 
 
-def build_document(students, dates, semester, filename, level=2, include_names=True):
-#    print("build_document", include_names)
+def build_document(students, dates, semester, filename, level=2,
+                   include_names=True):
+    #    print("build_document", include_names)
     buf = io.BytesIO()
 
     output_doc = SimpleDocTemplate(
@@ -129,7 +130,7 @@ def add_row(i, student, experiment, day, table_content, table_style, styles, ext
             canonical_experiment.number,
             Paragraph(localise(student.lang, canonical_experiment.title, strings) +
                       ("" if canonical_experiment.writeup else "*"), styles["Normal"]),
-                      canonical_experiment.acronym]
+            canonical_experiment.acronym]
     table_content.append(line)
     row_heights.append(8 * mm)
         
@@ -191,12 +192,19 @@ def print_student(student, dates, semester, styles, header, include_names=True):
     cohort_text = localise(student.lang, "Cohort", strings)
     cohort_letter = ['A', 'B', 'C', 'D'][cohort(student.pair_number - 1)]
     if include_names:
-        Story.append(Paragraph("{} {}, {} {}, {} {}".format(student.number, student.name,
-                                                            pair_text, student.pair_number,
-                                                            cohort_text, cohort_letter),
-                               styles["Heading1"]))
+        Story.append(Paragraph(
+            "{} {}, {} {}, {} {}".format(
+                student.number, student.name,
+                pair_text, student.pair_number,
+                cohort_text, cohort_letter
+            ),
+            styles["Heading1"]
+        ))
     else:
-        Story.append(Paragraph("{} {}".format(pair_text, student.pair_number), styles["Heading1"]))
+        Story.append(Paragraph(
+            "{} {}".format(pair_text, student.pair_number),
+            styles["Heading1"]
+        ))
 
     #    Story.append(barcode)
     Story.append(Spacer(0, 5 * mm))
