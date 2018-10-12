@@ -525,7 +525,8 @@ def schedule(start):
             else:
                 acc += pleasantupdate(pairs, beta)[0]
             current_unpleasantness = unpleasantness(pairs)
-            if current_unpleasantness < min_unpleasantness:
+            if (current_unpleasantness < min_unpleasantness
+                    and sum(badness(pairs)) == 0):
                 min_unpleasantness = current_unpleasantness
                 minimally_unpleasant_state = deepcopy(pairs)
 
