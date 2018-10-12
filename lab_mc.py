@@ -23,7 +23,7 @@ experiments = {"CDP": Experiment(204, "Chaotic Double Pendulum", "CDP",
                "BG": Experiment(222,
                                 '<font face="AvenirNext">α</font>, '
                                 '<font face="AvenirNext">β</font>, and '
-                                '<font face="AvenirNext">γ</font>-radiation', 
+                                '<font face="AvenirNext">γ</font>-radiation',
                                 "BG"),
                "FHz": Experiment(223, "Franck Hertz", "FHz"),
                "RS": Experiment(224, "Rutherford Scattering", "RS"),
@@ -206,14 +206,14 @@ def unpleasantness(pairs):
     Would benefit from refactoring.'''
     undesirable_count = sum(1
                             for pair in pairs
-                            for experiment in pair 
+                            for experiment in pair
                             if experiment.undesirable)
 
     very_undesirable_count = 0
     for pair_index, pair in enumerate(pairs):
         local_count = max(sum(1 for experiment in pair[1:11]
                               if experiment.undesirable
-                              or experiment.writeup == False
+                              or not experiment.writeup
                               or "Group Project" in experiment.title
                               or experiment.title == "LabVIEW") - 5,
                           0)
@@ -223,7 +223,7 @@ def unpleasantness(pairs):
         if len(pair) > 11:
             local_count = max(sum(1 for experiment in pair[12:]
                                   if experiment.undesirable
-                                  or experiment.writeup == False
+                                  or not experiment.writeup
                                   or "Group Project" in experiment.title
                                   or experiment.title == "LabVIEW") - 5,
                               0)
@@ -496,7 +496,7 @@ def schedule(start):
 
     except KeyboardInterrupt:
         print("Interrupted, returning current state")
-        #tableform(pairs)
+        # tableform(pairs)
         return pairs, False
 
     iterations = 0
